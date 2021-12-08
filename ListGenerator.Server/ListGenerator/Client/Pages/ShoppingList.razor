@@ -1,0 +1,107 @@
+﻿@page "/shoppinglist"
+@using ListGenerator.Client.ViewModels
+
+
+@if (this.ReplenishmentItems == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="error-holder">
+        <ErrorComponent @ref="Error"></ErrorComponent>
+    </div>
+
+    <div class="normalShoppingDay">
+        <div class="shopping-label">
+            Normal shopping day
+        </div>
+        <select class="app-input-control normal-shopping-day-select" @onchange="RegenerateListFromDayOfWeek">
+
+            @foreach (var value in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                <option value="@value">@value</option>
+            }
+        </select>
+    </div>
+
+
+    <div class="customDatesWrapper">
+        <div class="first-shopping-date">
+            <span class="shopping-label">Next shopping date</span>
+
+            @{
+                var firstReplenishmentDate = this.FirstReplenishmentDate.ToString("yyyy-MM-dd");
+                var secondReplenishmentDate = this.SecondReplenishmentDate.ToString("yyyy-MM-dd");
+            }
+
+            <input type="date" class="app-input-control" value=@firstReplenishmentDate @onchange=@ChangeFirstReplenishmentDateValue max="@this.SecondReplenishmentDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="second-shopping-date">
+            <span class="shopping-label">Date after next shopping date</span>
+            <input type="date" class="app-input-control" value=@secondReplenishmentDate @onchange=@ChangeSecondReplenishmentDateValue min="@this.FirstReplenishmentDate.ToString("yyyy-MM-dd")" />
+        </div>
+    </div>
+
+
+    <div class="shopping-list-headline">Your shopping list for <span class="shopping-list-date">@this.FirstReplenishmentDate.ToString("d.MM.yyyy")</span> is:</div>
+
+
+    <EditForm Model="@this.ReplenishmentItems" OnValidSubmit="@ReplenishAllItems">
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <table class="items-shopping-list-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Will run out of supplies on</th>
+                    <th>Quantity to buy</th>
+                    <th>Shopping date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @for (int m = 0; m < this.ReplenishmentItems.Count; m++)
+                {
+
+                    var replenishmentItem = this.ReplenishmentItems[m];
+
+                    <tr>
+
+                        <td class="@replenishmentItem.ReplenishmentSignalClass replenishment-item-name">
+                            @replenishmentItem.Name
+                        </td>
+                        <td class="@replenishmentItem.ReplenishmentSignalClass replenishment-item-next-replenishment-date">
+                            @replenishmentItem.NextReplenishmentDate.Date.ToString("d.MM.yyyy")
+                        </td>
+                        <td class="replenishment-item-quantity-to-buy">
+                            <InputSelect class="app-input-control tableInputSelect" @bind-Value="@replenishmentItem.Quantity">
+
+                                @for (int i = 1; i <= Constants.MaxDisplayQuantityToBuy; i++)
+                                        {
+                                    <option value="@i">@i</option>
+                                        }
+
+                            </InputSelect>
+                        </td>
+                        <td class="replenishment-item-shopping-date">
+                            <InputDate class="app-input-control" @bind-Value="@replenishmentItem.ReplenishmentDate" max="@this.DateTimeNow.ToString("yyyy-MM-dd")"></InputDate>
+                        </td>
+                        <td>
+                            <RadzenButton Size="ButtonSize.Small" Click="@(x=> ReplenishItem(replenishmentItem.ItemId))">
+                                Replenish
+                            </RadzenButton>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary edit-btn">Replenish all</button>
+
+    </EditForm>
+
+}

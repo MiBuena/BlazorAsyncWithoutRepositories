@@ -1,0 +1,64 @@
+﻿
+@if (ShowDialog)
+{
+    <div class="item-modal">
+        <div class="modal fade show d-block" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="titleLabel">Item Quick Add</h5>
+                        <button @onclick="Close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <ErrorComponent @ref="Error"></ErrorComponent>
+
+                        <EditForm Model="@ItemToAdd" OnValidSubmit="@HandleValidSubmit">
+
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="form-group row">
+                                <label for="name" class="col-sm-3">Name: </label>
+                                <InputText id="name" class="form-control col-sm-8" placeholder="Enter item name" @bind-Value="@ItemToAdd.Name"></InputText>
+                                <ValidationMessage class="offset-sm-3 col-sm-8" For="@(() => ItemToAdd.Name)" />
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="country" class="col-sm-3">1 piece is consumed for: </label>
+                                <InputSelect id="country" class="form-control col-sm-2" @bind-Value="@ItemToAdd.ReplenishmentPeriodString">
+
+                                    @for (int i = 1; i <= 90; i++)
+                                        {
+                                        @if (i == 1)
+                                            {
+                                            <option value="@i" selected="selected">@i</option>
+                                            }
+                                            else
+                                            {
+                                            <option value="@i">@i</option>
+                                            }
+                                        }
+
+                                </InputSelect>
+                                <span class="periodMeasure">day(s)</span>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="nextReplenishmentDate" class="col-sm-3">Next Replenishment Date: </label>
+                                <RadzenDatePicker @bind-Value="@ItemToAdd.NextReplenishmentDate" DateFormat="@Constants.DisplayDateFormat" />
+                                <ValidationMessage class="offset-sm-3 col-sm-8" For="@(() => ItemToAdd.NextReplenishmentDate)" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary edit-btn">Save item</button>
+
+                        </EditForm>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,120 @@
+﻿@page "/allitemstable"
+
+@using ListGenerator.Client.ViewModels;
+@using ListGenerator.Shared.Extensions
+
+@{
+    var columnSize = "160px";
+}
+
+<ChangeLanguage ChangeEventCallBack="Reload_OnCultureChange"></ChangeLanguage>
+
+<div class="error-holder">
+    <ErrorComponent @ref="Error"></ErrorComponent>
+</div>
+
+<div class="search-holder">
+    <span class="search-label">Search by text</span>
+
+    <RadzenAutoComplete Data="@DisplayItemsNames" Placeholder="Search..."
+                        TextProperty="Name" class="search-input"
+                        @bind-Value="@SearchWord"
+                        LoadData="@LoadAutoCompleteData" />
+
+    <button class="basic-button" @onclick="@Search">
+        <i class="material-icons">search</i>
+    </button>
+    <button class="basic-button clear-filters-button" @onclick="@ClearFilters">Clear filters</button>
+</div>
+
+<div class="search-holder">
+    <span>Search by date</span>
+    <RadzenDatePicker @bind-Value="SearchDate" DateFormat="d" Change="@(args => Search())" />
+</div>
+
+
+
+<button @onclick="@NavigateToListGeneration" class="btn btn-outline-primary shopping-list-button">Generate shopping list</button>
+
+<RadzenGrid @ref="@Table" Count="@Count" Data="@DisplayItems" LoadData="@LoadData" AllowSorting="true" AllowPaging="true" PageSize="5" TItem="ItemOverviewViewModel">
+    <Columns>
+        @*<RadzenGridColumn TItem="Employee" Property="Photo" Title="Photo" Sortable="false" Filterable="false">
+                <Template Context="data">
+                    <RadzenImage Path="@data?.Photo" />
+                </Template>
+            </RadzenGridColumn>*@
+        <RadzenGridColumn TItem="ItemOverviewViewModel" Property="Name" Width="@columnSize" HeaderCssClass="grid-column-header">
+            <HeaderTemplate>
+                <span class="grid-column-text">Name</span>
+            </HeaderTemplate>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="ItemOverviewViewModel" Property="ReplenishmentPeriod" Width="@columnSize" TextAlign="TextAlign.Center" HeaderCssClass="grid-column-header">
+            <HeaderTemplate>
+                <span class="grid-column-text">1 piece is consumed for (days)</span>
+            </HeaderTemplate>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="ItemOverviewViewModel" Property="LastReplenishmentQuantity" Width="@columnSize" TextAlign="TextAlign.Center" HeaderCssClass="grid-column-header">
+            <HeaderTemplate>
+                <span class="grid-column-text">Last purchase quantity</span>
+            </HeaderTemplate>
+            <Template Context="data">
+                @if (data.LastReplenishmentQuantity == null)
+                {
+                    @:-
+                }
+                else
+                {
+                    @data.LastReplenishmentQuantity
+                }
+            </Template>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="ItemOverviewViewModel" Property="LastReplenishmentDate" Width="@columnSize" TextAlign="TextAlign.Center" HeaderCssClass="grid-column-header">
+            <HeaderTemplate>
+                <span class="grid-column-text">Last purchase date</span>
+            </HeaderTemplate>
+            <Template Context="data">
+                @if (data.LastReplenishmentDate == null)
+                {
+                    @:-
+                }
+                else
+                {
+                    @data.LastReplenishmentDate.Value.ToDateString()
+                }
+            </Template>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="ItemOverviewViewModel" Property="NextReplenishmentDate" Width="@columnSize" TextAlign="TextAlign.Center" HeaderCssClass="grid-column-header">
+            <HeaderTemplate>
+                <span class="grid-column-text">Next replenishment date</span>
+            </HeaderTemplate>
+            <Template Context="data">
+                @data.NextReplenishmentDate.ToDateString()
+            </Template>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="ItemOverviewViewModel" Sortable="false" HeaderCssClass="grid-column-header">
+            <HeaderTemplate>
+                <span class="grid-column-text">Actions</span>
+            </HeaderTemplate>
+            <Template Context="item">
+                <RadzenButton Size="ButtonSize.Small" Click="@(x => QuickEditItem(item.Id))">
+                    Edit
+                </RadzenButton>
+                <RadzenButton Size="ButtonSize.Small" Click="@(x => DeleteItemQuestion(item.Id))">
+                    Delete
+                </RadzenButton>
+            </Template>
+        </RadzenGridColumn>
+    </Columns>
+</RadzenGrid>
+
+
+<br />
+
+<RadzenButton Text="Quick add" Size="ButtonSize.Medium" Click="@QuickAddItem" ButtonStyle="ButtonStyle.Secondary">
+</RadzenButton>
+
+<AddItemDialog @ref="AddItemDialog" CloseEventCallback="@AddItemDialog_OnDialogClose"></AddItemDialog>
+
+<EditItemDialog @ref="EditItemDialog" CloseEventCallback="@EditItemDialog_OnDialogClose"></EditItemDialog>
+
+<DeleteItemDialog @ref="DeleteItemDialog" CloseEventCallback="@DeleteItemDialog_OnDialogClose"></DeleteItemDialog>

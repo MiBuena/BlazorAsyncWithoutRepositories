@@ -1,0 +1,29 @@
+﻿@if (ShowDialog)
+{
+    <div class="item-modal">
+
+        <div class="modal fade show d-block" id="exampleModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="titleLabel">Delete item</h5>
+                        <button @onclick="Close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <ErrorComponent @ref="Error"></ErrorComponent>
+
+                        @if (this.Item != null)
+                        {
+                            <span>Delete item @this.Item.Name</span>
+                            <button @onclick="DeleteItem" class="btn btn-primary edit-btn">Delete</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
