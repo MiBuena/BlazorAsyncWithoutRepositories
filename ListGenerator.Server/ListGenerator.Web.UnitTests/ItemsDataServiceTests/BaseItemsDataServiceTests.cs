@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using ListGenerator.Data.Entities;
 using ListGenerator.Data.Interfaces;
+using ListGenerator.Server.CommonResources;
 using ListGenerator.Server.Interfaces;
 using ListGenerator.Server.Services;
 using ListGenerator.Shared.Dtos;
 using ListGenerator.Web.UnitTests.Helpers;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -21,11 +23,13 @@ namespace ListGenerator.Web.UnitTests.ItemsDataServiceTests
         [SetUp]
         protected virtual void Init()
         {
+            StringLocalizerMock = new Mock<IStringLocalizer<Errors>>(MockBehavior.Strict);
             ItemsRepositoryMock = new Mock<IRepository<Item>>(MockBehavior.Strict);
             MapperMock = new Mock<IMapper>(MockBehavior.Strict);
-            ItemsDataService = new ItemsDataService(ItemsRepositoryMock.Object, MapperMock.Object);
+            ItemsDataService = new ItemsDataService(ItemsRepositoryMock.Object, MapperMock.Object, StringLocalizerMock.Object);
         }
 
+        protected Mock<IStringLocalizer<Errors>> StringLocalizerMock { get; private set; }
         protected Mock<IRepository<Item>> ItemsRepositoryMock { get; private set; }
         protected Mock<IMapper> MapperMock { get; private set; }
         protected IItemsDataService ItemsDataService { get; private set; }

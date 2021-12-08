@@ -2,6 +2,7 @@
 using ListGenerator.Data.Entities;
 using ListGenerator.Shared.Dtos;
 using ListGenerator.Shared.Enums;
+using Microsoft.Extensions.Localization;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,10 @@ namespace ListGenerator.Web.UnitTests.ItemsDataServiceTests
         protected override void Init()
         {
             base.Init();
+            string key = "OverviewItemsError";
+            string value = "An error occured while getting items";
+            var localizedString = new LocalizedString(key, value);
+            StringLocalizerMock.Setup(_ => _[key]).Returns(localizedString);
         }
 
 
@@ -649,7 +654,7 @@ namespace ListGenerator.Web.UnitTests.ItemsDataServiceTests
             //Assert
             AssertHelper.AssertAll(
                  () => response.IsSuccess.Should().BeFalse(),
-                 () => response.ErrorMessage.Should().Be("An error occured while getting items names"),
+                 () => response.ErrorMessage.Should().Be("An error occured while getting items"),
                  () => response.Data.Should().BeNull()
                  );
         }
@@ -676,7 +681,7 @@ namespace ListGenerator.Web.UnitTests.ItemsDataServiceTests
             //Assert
             AssertHelper.AssertAll(
                  () => response.IsSuccess.Should().BeFalse(),
-                 () => response.ErrorMessage.Should().Be("An error occured while getting items names"),
+                 () => response.ErrorMessage.Should().Be("An error occured while getting items"),
                  () => response.Data.Should().BeNull()
                  );
         }
@@ -695,7 +700,6 @@ namespace ListGenerator.Web.UnitTests.ItemsDataServiceTests
                 SearchWord = "B"
             };
 
-
             //Act
             var response = ItemsDataService.GetItemsOverviewPageModel("ab70793b-cec8-4eba-99f3-cbad0b1649d0", null);
 
@@ -703,7 +707,7 @@ namespace ListGenerator.Web.UnitTests.ItemsDataServiceTests
             //Assert
             AssertHelper.AssertAll(
                  () => response.IsSuccess.Should().BeFalse(),
-                 () => response.ErrorMessage.Should().Be("An error occured while getting items names"),
+                 () => response.ErrorMessage.Should().Be("An error occured while getting items"),
                  () => response.Data.Should().BeNull()
                  );
         }
