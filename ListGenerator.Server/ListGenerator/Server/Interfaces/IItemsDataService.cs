@@ -1,12 +1,13 @@
 ﻿using ListGenerator.Shared.Dtos;
 using ListGenerator.Shared.Responses;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ListGenerator.Server.Interfaces
 {
     public interface IItemsDataService
     {
-        Response<IEnumerable<ItemNameDto>> GetItemsNames(string searchWord, string userId);
+        Task<Response<IEnumerable<ItemNameDto>>> GetItemsNames(string searchWord, string userId);
 
         Response<ItemDto> GetItem(int itemId, string userId);
 

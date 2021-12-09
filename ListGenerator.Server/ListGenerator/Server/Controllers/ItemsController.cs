@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Linq;
 using ListGenerator.Data.DB.Migrations;
+using System.Threading.Tasks;
 
 namespace ListGenerator.Server.Controllers
 {
@@ -24,9 +25,9 @@ namespace ListGenerator.Server.Controllers
         }
 
         [HttpGet("itemsnames/{searchWord}")]
-        public IActionResult GetItemsNames(string searchWord)
+        public async Task<IActionResult> GetItemsNames(string searchWord)
         {
-            var response = _itemsDataService.GetItemsNames(searchWord, this.UserId);
+            var response = await _itemsDataService.GetItemsNames(searchWord, this.UserId);
 
             if(!response.IsSuccess)
             {

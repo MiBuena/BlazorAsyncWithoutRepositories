@@ -18,43 +18,34 @@ using ListGenerator.Shared.Extensions;
 using ListGenerator.Shared.CustomExceptions;
 using ListGenerator.Server.CommonResources;
 using Microsoft.Extensions.Localization;
+using ListGeneratorListGenerator.Data.DB;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace ListGenerator.Server.Services
 {
-    public class ItemsDataService : IItemsDataService
+    public class ItemsDataService : BaseDataService, IItemsDataService
     {
-        private readonly IRepository<Item> _itemsRepository;
-        private readonly IMapper _mapper;
-        private readonly IStringLocalizer<Errors> _localizer;
-
-
-        public ItemsDataService(IRepository<Item> itemsRepository, 
-            IMapper mapper, 
-            IStringLocalizer<Errors> localizer)
+        public ItemsDataService(ApplicationDbContext db, IMapper mapper, IStringLocalizer<Errors> localizer) : base(db, mapper, localizer)
         {
-            _itemsRepository = itemsRepository;
-            _mapper = mapper;
-            _localizer = localizer;
         }
 
-        public Response<IEnumerable<ItemNameDto>> GetItemsNames(string searchWord, string userId)
+        public async Task<Response<IEnumerable<ItemNameDto>>> GetItemsNames(string searchWord, string userId)
         {
             try
             {
                 searchWord.ThrowIfNull();
                 userId.ThrowIfNullOrEmpty();
 
-                var query = _itemsRepository.All()
+                var query = _db.Items
                     .Where(x => x.UserId == userId);
-
-                var names = new List<ItemNameDto>();
 
                 if (!string.IsNullOrEmpty(searchWord))
                 {
                     query = query.Where(x => x.Name.ToLower().Contains(searchWord.ToLower()));
                 }
 
-                names = _mapper.ProjectTo<ItemNameDto>(query).ToList();
+                var names = await _mapper.ProjectTo<ItemNameDto>(query).ToListAsync();
 
                 var response = ResponseBuilder.Success<IEnumerable<ItemNameDto>>(names);
                 return response;
@@ -155,7 +146,7 @@ namespace ListGenerator.Server.Services
 
         private IQueryable<ItemOverviewDto> GetBaseQuery(string userId)
         {
-            var query = _itemsRepository.All()
+            var query = _db.Items
                 .Where(x => x.UserId == userId)
                 .Select(x => new ItemOverviewDto()
                 {
@@ -180,7 +171,7 @@ namespace ListGenerator.Server.Services
         {
             try
             {
-                var query = _itemsRepository.All().Where(x => x.Id == itemId && x.UserId == userId);
+                var query = _db.Items.Where(x => x.Id == itemId && x.UserId == userId);
 
                 var dto = _mapper.ProjectTo<ItemDto>(query).FirstOrDefault();
 
@@ -211,8 +202,8 @@ namespace ListGenerator.Server.Services
                 var itemEntity = _mapper.Map<ItemDto, Item>(itemDto);
                 itemEntity.UserId = userId;
 
-                _itemsRepository.Add(itemEntity);
-                _itemsRepository.SaveChanges();
+                _db.Add(itemEntity);
+                _db.SaveChanges();
 
                 var response = ResponseBuilder.Success();
                 return response;
@@ -231,7 +222,7 @@ namespace ListGenerator.Server.Services
                 userId.ThrowIfNullOrEmpty();
                 itemDto.ThrowIfNull();
 
-                var itemToUpdate = _itemsRepository.All()
+                var itemToUpdate = _db.Items
                     .FirstOrDefault(x => x.Id == itemDto.Id && x.UserId == userId);
 
                 itemToUpdate.ThrowIfNullWithShowMessage($"Current user does not have item with id {itemDto.Id}");
@@ -241,9 +232,14 @@ namespace ListGenerator.Server.Services
                 itemToUpdate.NextReplenishmentDate = itemDto.NextReplenishmentDate;
                 itemToUpdate.UserId = userId;
 
-                _itemsRepository.Update(itemToUpdate);
-                _itemsRepository.SaveChanges();
+                var entry = _db.Entry(itemToUpdate);
+                if (entry.State == EntityState.Detached)
+                {
+                    this._db.Items.Attach(itemToUpdate);
+                }
 
+                entry.State = EntityState.Modified;
+                _db.SaveChanges();
 
                 var response = ResponseBuilder.Success();
                 return response;
@@ -266,13 +262,13 @@ namespace ListGenerator.Server.Services
             {
                 userId.ThrowIfNullOrEmpty();
 
-                var itemToDelete = _itemsRepository.All()
+                var itemToDelete = _db.Items
                     .FirstOrDefault(x => x.Id == id && x.UserId == userId);
 
                 itemToDelete.ThrowIfNullWithShowMessage($"Current user does not have item with id {id}");
 
-                _itemsRepository.Delete(itemToDelete);
-                _itemsRepository.SaveChanges();
+                _db.Items.Remove(itemToDelete);
+                _db.SaveChanges();
 
                 var response = ResponseBuilder.Success();
                 return response;
