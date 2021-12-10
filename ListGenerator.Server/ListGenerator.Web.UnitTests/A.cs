@@ -57,6 +57,8 @@ namespace ListGenerator.Web.UnitTests
         public async Task Can_get_items()
         {
             Mock<IOptions<OperationalStoreOptions>> operationalStoreOptions = new Mock<IOptions<OperationalStoreOptions>>();
+
+
             operationalStoreOptions.Setup(x => x.Value)
                 .Returns(new OperationalStoreOptions() 
                 { 
@@ -67,6 +69,15 @@ namespace ListGenerator.Web.UnitTests
                     TokenCleanupInterval = 3600
                 }
             );
+
+            IOptions<OperationalStoreOptions> options = Options.Create(new OperationalStoreOptions()
+            {
+                DeviceFlowCodes = new TableConfiguration("DeviceCodes"),
+                EnableTokenCleanup = false,
+                PersistedGrants = new TableConfiguration("PersistedGrants"),
+                TokenCleanupBatchSize = 100,
+                TokenCleanupInterval = 3600
+            });
 
 
             using (var context = new ApplicationDbContext(ContextOptions, operationalStoreOptions.Object))
